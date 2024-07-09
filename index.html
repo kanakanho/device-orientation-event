@@ -4,37 +4,35 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
+    <style>
+      button {
+        width: 400px;
+        height: 100px;
+        font-size: 2rem;
+      }
+    </style>
   </head>
   <body>
     <h2>Hello, World!</h2>
+    <button onclick="permission()">許可</button>
     <button onclick="alpha()">実行</button>
     <p id="alpha"></p>
   </body>
   <script>
+    function permission() {
+      DeviceOrientationEvent.requestPermission()
+        .then((response) => {
+          if (response === "granted") {
+            document.getElementById("alpha").textContent = "許可されました";
+          } else {
+            document.getElementById("alpha").textContent = "許可されませんでした";
+          }
+        })
+        .catch(console.error);
+    }
     function alpha() {
       // イベントリスナーが複数回追加されないようにするためのフラグ
       let isListenerAdded = false;
-
-      // ios かどうかを判定
-      const userAgent = window.navigator.userAgent;
-      const isIOS = userAgent.includes("iPhone") || userAgent.includes("iPad") || userAgent.includes("iPod");
-      if (isIOS) {
-        document.getElementById("alpha").textContent = "iOSデバイスです";
-        DeviceOrientationEvent.requestPermission()
-          .then((response) => {
-            if (response === "granted") {
-              window.addEventListener("deviceorientation", (event) => {
-                // id が alpha の要素に表示
-                if (!event.alpha) document.getElementById("alpha").textContent = "デバイスが対応していません";
-                else document.getElementById("alpha").textContent = event.alpha;
-              });
-            } else {
-              document.getElementById("alpha").textContent = "許可されませんでした";
-            }
-          })
-          .catch(console.error);
-        return;
-      }
 
       if (!isListenerAdded) {
         window.addEventListener("deviceorientation", (event) => {
