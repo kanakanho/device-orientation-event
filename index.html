@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <h2>Hello, World!</h2>
+    <button onclick="alpha()">実行</button>
+    <p id="alpha"></p>
+  </body>
+  <script>
+    function alpha() {
+      // イベントリスナーが複数回追加されないようにするためのフラグ
+      let isListenerAdded = false;
+
+      // ios かどうかを判定
+      const userArgent = window.navigator.userAgent;
+      const isIOS = userArgent.includes("iPhone") || userArgent.includes("iPad") || userArgent.includes("iPod");
+      if (isIOS) {
+        document.getElementById("alpha").textContent = "iOSデバイスです";
+        DeviceOrientationEvent.requestPermission()
+          .then((response) => {
+            if (response === "granted") {
+              // id が alpha の要素に表示
+              document.getElementById("alpha").textContent = "許可されました";
+            }
+          })
+          .catch(console.error);
+        return;
+      }
+
+      if (!isListenerAdded) {
+        while (1) {
+          window.addEventListener("deviceorientation", (event) => {
+            console.log(event);
+            // id が alpha の要素に表示
+            if (!event.alpha) document.getElementById("alpha").textContent = "デバイスが対応していません";
+            else document.getElementById("alpha").textContent = event.alpha;
+          });
+          isListenerAdded = true; // イベントリスナーを追加した後、フラグを true に設定
+        }
+      }
+    }
+  </script>
+</html>
