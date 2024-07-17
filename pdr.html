@@ -124,7 +124,10 @@
         };
 
         const updateSensorDataDisplay = () => {
-          sensorDataElement.textContent = JSON.stringify({ sensorDataAcc, sensorDataGyro }, null, 2);
+          // 最新のデータのみを表示
+          const latestAcc = sensorDataAcc[sensorDataAcc.length - 1];
+          const latestGyro = sensorDataGyro[sensorDataGyro.length - 1];
+          sensorDataElement.textContent = `Acc: ${JSON.stringify(latestAcc)}\nGyro: ${JSON.stringify(latestGyro)}`;
         };
 
         document.getElementById("permissionButton").addEventListener("click", requestPermission);
