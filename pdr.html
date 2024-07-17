@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sensor Data App</title>
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        text-decoration: none;
+      }
+
+      button {
+        width: 300px;
+        height: 4rem;
+        font-size: 2rem;
+        margin: 20px 0;
+      }
+
+      main {
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+        align-items: center;
+        height: 100vh;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <button id="permissionButton">許可</button>
+      <button id="startButton">スタート</button>
+      <button id="stopButton">エンド</button>
+      <button id="saveButton">保存</button>
+      <a id="downloadLink" style="display: none">ダウンロード</a>
+      <pre id="sensorData"></pre>
+    </main>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const sensorDataAcc = [];
+        const sensorDataGyro = [];
+        const downloadLink = document.getElementById("downloadLink");
+        const sensorDataElement = document.getElementById("sensorData");
+        let sensorStarted = false; // 追加: センサーが開始されたかどうかを追跡するフラグ
+
+        const requestPermission = async () => {
+          try {
+            if (typeof DeviceMotionEvent.requestPermission === "function") {
+              const motionPermission = await DeviceMotionEvent.requestPermission();
+              if (motionPermission !== "granted") {
+                throw new Error("DeviceMotion permission not granted");
+              }
+            }
+
+            if (typeof DeviceOrientationEvent.requestPermission === "function") {
+              const orientationPermission = await DeviceOrientationEvent.requestPermission();
+              if (orientationPermission !== "granted") {
+                throw new Error("DeviceOrientation permission not granted");
+              }
+            }
+
+            startSensor();
+          } catch (e) {
+            console.error("Permission request failed", e);
+          }
+        };
+
+        const startSensor = () => {
+          if (!sensorStarted) {
+            // 追加: センサーが既に開始されていないか確認
+            window.addEventListener("devicemotion", handleAcc);
+            window.addEventListener("deviceorientation", handleGyro);
+            sensorStarted = true; // 更新: センサーが開始されたことを示す
+          }
+        };
+
+        const stopSensor = () => {
+          if (sensorStarted) {
+            // 追加: センサーが開始されている場合のみ停止処理を実行
+            window.removeEventListener("devicemotion", handleAcc);
+            window.removeEventListener("deviceorientation", handleGyro);
+            sensorStarted = false; // 更新: センサーが停止されたことを示す
+          }
+        };
+
+        const exportCSV = () => {
+          if (!sensorDataAcc.length && !sensorDataGyro.length) return;
+
+          const accCsvLines = sensorDataAcc.map((data) => `${data.x},${data.y},${data.z}`).join("\n");
+          const gyroCsvLines = sensorDataGyro.map((data) => `${data.alpha},${data.beta},${data.gamma}`).join("\n");
+          const csv = `acc,x,y,z\n${accCsvLines}\ngyro,alpha,beta,gamma\n${gyroCsvLines}`;
+
+          const blob = new Blob([csv], { type: "text/csv" });
+          const url = URL.createObjectURL(blob);
+          downloadLink.href = url;
+          downloadLink.download = "sensorData.csv";
+          downloadLink.style.display = "block"; // 修正: ダウンロードリンクを表示
+          downloadLink.click();
+          downloadLink.style.display = "none"; // 追加: クリック後にリンクを再び非表示にする
+        };
+
+        const handleAcc = (event) => {
+          const { acceleration } = event;
+          const acc = {
+            x: acceleration?.x ?? 0,
+            y: acceleration?.y ?? 0,
+            z: acceleration?.z ?? 0,
+          };
+          sensorDataAcc.push(acc);
+          updateSensorDataDisplay();
+        };
+
+        const handleGyro = (event) => {
+          const { alpha, beta, gamma } = event;
+          const gyro = {
+            alpha: alpha ?? 0,
+            beta: beta ?? 0,
+            gamma: gamma ?? 0,
+          };
+          sensorDataGyro.push(gyro);
+          updateSensorDataDisplay();
+        };
+
+        const updateSensorDataDisplay = () => {
+          sensorDataElement.textContent = JSON.stringify({ sensorDataAcc, sensorDataGyro }, null, 2);
+        };
+
+        document.getElementById("permissionButton").addEventListener("click", requestPermission);
+        document.getElementById("startButton").addEventListener("click", startSensor);
+        document.getElementById("stopButton").addEventListener("click", stopSensor);
+        document.getElementById("saveButton").addEventListener("click", exportCSV);
+      });
+    </script>
+  </body>
+</html>
