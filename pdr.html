@@ -88,9 +88,9 @@
         const exportCSV = () => {
           if (!sensorDataAcc.length && !sensorDataGyro.length) return;
 
-          const accCsvLines = sensorDataAcc.map((data) => `${data.x},${data.y},${data.z}`).join("\n");
-          const gyroCsvLines = sensorDataGyro.map((data) => `${data.alpha},${data.beta},${data.gamma}`).join("\n");
-          const csv = `acc,x,y,z\n${accCsvLines}\ngyro,alpha,beta,gamma\n${gyroCsvLines}`;
+          const accCsvLines = sensorDataAcc.map((data) => `acc,${data.x},${data.y},${data.z}`).join("\n");
+          const gyroCsvLines = sensorDataGyro.map((data) => `gyro,${data.alpha},${data.beta},${data.gamma}`).join("\n");
+          const csv = `type,x,y,z\n${accCsvLines}\ntype,alpha,beta,gamma\n${gyroCsvLines}`;
 
           const blob = new Blob([csv], { type: "text/csv" });
           const url = URL.createObjectURL(blob);
