@@ -88,9 +88,13 @@
         const exportCSV = () => {
           if (!sensorDataAcc.length && !sensorDataGyro.length) return;
 
-          const accCsvLines = sensorDataAcc.map((data) => `acc,${data.x},${data.y},${data.z}`).join("\n");
-          const gyroCsvLines = sensorDataGyro.map((data) => `gyro,${data.alpha},${data.beta},${data.gamma}`).join("\n");
-          const csv = `type,x,y,z\n${accCsvLines}\ntype,alpha,beta,gamma\n${gyroCsvLines}`;
+          const accCsvLines = sensorDataAcc
+            .map((data) => `acc,${data.timestamp},${data.x},${data.y},${data.z}`)
+            .join("\n");
+          const gyroCsvLines = sensorDataGyro
+            .map((data) => `gyro,${data.timestamp},${data.alpha},${data.beta},${data.gamma}`)
+            .join("\n");
+          const csv = `type,t,x,y,z\n${accCsvLines}\ntype,t,alpha,beta,gamma\n${gyroCsvLines}`;
 
           const blob = new Blob([csv], { type: "text/csv" });
           const url = URL.createObjectURL(blob);
@@ -104,6 +108,7 @@
         const handleAcc = (event) => {
           const { acceleration } = event;
           const acc = {
+            timestamp: Date.now(), // 修正: Data.now() から Date.now() へ
             x: acceleration?.x ?? 0,
             y: acceleration?.y ?? 0,
             z: acceleration?.z ?? 0,
@@ -115,6 +120,7 @@
         const handleGyro = (event) => {
           const { alpha, beta, gamma } = event;
           const gyro = {
+            timestamp: Date.now(), // 修正: Data.now() から Date.now() へ
             alpha: alpha ?? 0,
             beta: beta ?? 0,
             gamma: gamma ?? 0,
